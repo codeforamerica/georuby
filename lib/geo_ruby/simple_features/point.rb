@@ -376,6 +376,46 @@ module GeoRuby
         alias :from_lon_lat_z_m :from_x_y_z_m
         alias :from_rad_tet     :from_r_t
       end
+      
+      def is_in_polygon?(polygon)
+        contains_point = false
+        outer_ring = polygon[0]
+        if is_in_a_single_polygon?(outer_ring)
+          contains_point = true 
+          polygon[1..-1].each do |hole|
+            contains_point = false if is_in_a_single_polygon?(hole)
+          end
+        end
+        contains_point
+      end
+      
+      # thanks to http://jakescruggs.blogspot.com/2009/07/point-inside-polygon-in-ruby.html
+      def is_in_a_single_polygon?(coords)
+        contains_point = false
+        i = -1
+        j = coords.size - 1
+        while (i += 1) < coords.size
+          a_point_on_polygon = coords[i]
+          trailing_point_on_polygon = coords[j]
+          if point_is_between_the_ys_of_the_line_segment?(a_point_on_polygon, trailing_point_on_polygon)
+            if ray_crosses_through_line_segment?(a_point_on_polygon, trailing_point_on_polygon)
+              contains_point = !contains_point
+            end
+          end
+          j = i
+        end
+        contains_point
+      end
+
+      def point_is_between_the_ys_of_the_line_segment?(a_point_on_polygon, trailing_point_on_polygon)
+        (a_point_on_polygon.y <= self.y && self.y < trailing_point_on_polygon.y) || 
+        (trailing_point_on_polygon.y <= self.y && self.y < a_point_on_polygon.y)
+      end
+
+      def ray_crosses_through_line_segment?(a_point_on_polygon, trailing_point_on_polygon)
+        (self.x < (trailing_point_on_polygon.x - a_point_on_polygon.x) * (self.y - a_point_on_polygon.y) / 
+                   (trailing_point_on_polygon.y - a_point_on_polygon.y) + a_point_on_polygon.x)
+      end
     end
   end
 end

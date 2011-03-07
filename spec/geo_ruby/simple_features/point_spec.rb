@@ -289,7 +289,37 @@ describe Point do
     end
 
   end
+  
+  describe "> Point in polygon (http://en.wikipedia.org/wiki/Point_in_polygon)" do
 
+    before(:each) do
+      @boundary = [Point.from_x_y( 48.25028349849019, 70.17997741699219 ),
+                   Point.from_x_y( 48.29804089043021, 70.17860412597656 ),
+                   Point.from_x_y( 48.29689889024689, 70.29876708984375 ),
+                   Point.from_x_y( 48.25051210903917, 70.31661987304688 )]
+      @hole = [Point.from_x_y( 48.27165416543045, 70.23894309997559 ),
+               Point.from_x_y( 48.27171129427522, 70.24383544921875 ),
+               Point.from_x_y( 48.270111662477994, 70.24409294128418 ),
+               Point.from_x_y( 48.2702259235527, 70.23894309997559 )]
+      @polygon = Polygon.from_points([@boundary, @hole])
+      @inside_boundary = Point.from_x_y( 48.27588152743497, 70.25997161865234 )
+      @outside_boundary = Point.from_x_y( 40.71193087902627, -74.01225328445435 )
+      @inside_hole = Point.from_x_y( 48.270797225094036, 70.24160385131836 )
+    end
+    
+    it "should return true if point is inside given polygon" do
+      @inside_boundary.is_in_polygon?(@polygon).should be_true
+    end
+    
+    it "should return false if point is not inside given polygon" do
+      @outside_boundary.is_in_polygon?(@polygon).should be_false
+    end
+    
+    it "should take into account the holes in a polygon when checking" do
+      @inside_hole.is_in_polygon?(@polygon).should be_false
+    end
+  end
+  
   describe "> Export Formats" do
 
     before(:each) do
