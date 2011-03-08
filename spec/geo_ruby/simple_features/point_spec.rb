@@ -321,6 +321,8 @@ describe Point do
       
       @third_vertex=Point.from_x_y(0,1)
       @on_other_edge=Point.from_x_y(0,0.5)
+      
+      @outside_point=Point.from_x_y(1,3)
     end
     
     it "should return false if point is not inside given polygon" do
@@ -339,6 +341,9 @@ describe Point do
     it "should have outside points outside, even on lines collinear with the ray" do
       @co_before_edge.is_in_polygon?(@simple_triangle).should be_false
       @co_after_edge.is_in_polygon?(@simple_triangle).should be_false
+    end
+    it "should have outside points outside, even on paths collinear with a vertex" do
+      @outside_point.is_in_polygon?(@simple_triangle).should be_false
     end
     it "should have vertexes inside" do
       @third_vertex.is_in_polygon?(@simple_triangle).should be_true
