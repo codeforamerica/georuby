@@ -305,23 +305,25 @@ describe Point do
                           Point.from_x_y( 48.27171129427522, 70.24383544921875 ),
                           Point.from_x_y( 48.270111662477994, 70.24409294128418 ),
                           Point.from_x_y( 48.2702259235527, 70.23894309997559 )]
-      @polygon = Polygon.from_points([@boundary, @hole])
+                          #basic bulls-eye shape
+      @polygon = Polygon.from_points([@outer_boundary, @middle_boundary,@inner_boundary])
       @outside_boundaries = Point.from_x_y( 40.71193087902627, -74.01225328445435 )
       @inside_outer_boundary = Point.from_x_y( 47.66168780332917, 69.0325927734375 )
       @inside_middle_boundary = Point.from_x_y( 48.27588152743497, 70.25997161865234 )
       @inside_inner_boundary = Point.from_x_y( 48.270797225094036, 70.24160385131836 )
     end
     
-    it "should return true if point is inside given polygon" do
-      @inside_boundary.is_in_polygon?(@polygon).should be_true
-    end
-    
     it "should return false if point is not inside given polygon" do
-      @outside_boundary.is_in_polygon?(@polygon).should be_false
+      @outside_boundaries.is_in_polygon?(@polygon).should be_false
     end
-    
+    it "should return true if point is inside given polygon" do
+      @inside_outer_boundary.is_in_polygon?(@polygon).should be_true
+    end
+    it "should return true if point is inside inner islands" do
+      @inside_inner_boundary.is_in_polygon?(@polygon).should be_true
+    end
     it "should take into account the holes in a polygon when checking" do
-      @inside_hole.is_in_polygon?(@polygon).should be_false
+      @inside_middle_boundary.is_in_polygon?(@polygon).should be_false
     end
   end
   
