@@ -377,45 +377,35 @@ module GeoRuby
         alias :from_rad_tet     :from_r_t
       end
       
+      #calculates a vector offset in x,y.
+      def -(other)
+        Point.from_x_y(x-other.x,y-other.y)
+      end
       def is_in_polygon?(polygon)
-        contains_point = false
-        outer_ring = polygon[0]
-        if is_in_a_single_polygon?(outer_ring)
-          contains_point = true 
-          polygon[1..-1].each do |hole|
-            contains_point = false if is_in_a_single_polygon?(hole)
-          end
-        end
-        contains_point
-      end
-      
-      # thanks to http://jakescruggs.blogspot.com/2009/07/point-inside-polygon-in-ruby.html
-      def is_in_a_single_polygon?(coords)
-        contains_point = false
-        i = -1
-        j = coords.size - 1
-        while (i += 1) < coords.size
-          a_point_on_polygon = coords[i]
-          trailing_point_on_polygon = coords[j]
-          if point_is_between_the_ys_of_the_line_segment?(a_point_on_polygon, trailing_point_on_polygon)
-            if ray_crosses_through_line_segment?(a_point_on_polygon, trailing_point_on_polygon)
-              contains_point = !contains_point
+        return false if polygon.empty? #if polygon is null, we're not inside it
+        _START=0;_END=1
+        #calculate ray start, just use the min,min corner
+        #in future, maybe pick a better start, based on bounding box or clockwise rotatino?
+        ray_start=Point.from_x_y(polygon[0].map {|p| p.x}.min-1,polygon[0].map {|p| p.y}.min-1)
+        ray_offset=self-ray_start
+
+        polygon.inject(0) do |sum,ring|
+          sum+(ring+[ring.first]).each_cons(2).inject(0) do |s2,line| #pulls every pair of [p1,p2]
+            #see if the line from start to 'point' intersects the current line. we'll ignore intersections on the second verticie, as those will be counted as intersecting with the first verticie of the next line\
+            #treating the two lines as parametric lines, what are there intersecting parameters (ray_t,line_t)?
+            offset=line[_END]-line[_START]
+            denom = (offset.y*ray_offset.x-offset.x*ray_offset.y).to_f
+            unless (denom==0)
+              start_diff=ray_start-line[_START]
+              ray_t = (offset.x*start_diff.y - offset.y*start_diff.x)/denom
+              line_t = (ray_offset.x*start_diff.y - ray_offset.y*start_diff.x)/denom
+              next (s2+1) if (0..1).include? ray_t and (0...1).include? line_t
             end
+            s2
           end
-          j = i
-        end
-        contains_point
+        end.odd?
       end
 
-      def point_is_between_the_ys_of_the_line_segment?(a_point_on_polygon, trailing_point_on_polygon)
-        (a_point_on_polygon.y <= self.y && self.y < trailing_point_on_polygon.y) || 
-        (trailing_point_on_polygon.y <= self.y && self.y < a_point_on_polygon.y)
-      end
-
-      def ray_crosses_through_line_segment?(a_point_on_polygon, trailing_point_on_polygon)
-        (self.x < (trailing_point_on_polygon.x - a_point_on_polygon.x) * (self.y - a_point_on_polygon.y) / 
-                   (trailing_point_on_polygon.y - a_point_on_polygon.y) + a_point_on_polygon.x)
-      end
     end
   end
 end
