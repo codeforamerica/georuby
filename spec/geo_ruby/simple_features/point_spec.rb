@@ -311,6 +311,16 @@ describe Point do
       @inside_outer_boundary = Point.from_x_y( 47.66168780332917, 69.0325927734375 )
       @inside_middle_boundary = Point.from_x_y( 48.27588152743497, 70.25997161865234 )
       @inside_inner_boundary = Point.from_x_y( 48.270797225094036, 70.24160385131836 )
+      
+      @simple_triangle = Polygon.from_points([[Point.from_x_y(0,0),Point.from_x_y(0,1),Point.from_x_y(1,1)]])
+      @co_before_edge=Point.from_x_y(-0.5,-0.5)
+      @co_first_vertex=Point.from_x_y(0,0)
+      @co_on_edge=Point.from_x_y(0.5,0.5)
+      @co_second_vertex=Point.from_x_y(1,1)
+      @co_after_edge=Point.from_x_y(1.5,1.5)
+      
+      @third_vertex=Point.from_x_y(0,1)
+      @on_other_edge=Point.from_x_y(0,0.5)
     end
     
     it "should return false if point is not inside given polygon" do
@@ -324,6 +334,24 @@ describe Point do
     end
     it "should take into account the holes in a polygon when checking" do
       @inside_middle_boundary.is_in_polygon?(@polygon).should be_false
+    end
+    
+    it "should have outside points outside, even on lines collinear with the ray" do
+      @co_before_edge.is_in_polygon?(@simple_triangle).should be_false
+      @co_after_edge.is_in_polygon?(@simple_triangle).should be_false
+    end
+    it "should have vertexes inside" do
+      @third_vertex.is_in_polygon?(@simple_triangle).should be_true
+    end
+    it "should have vertexes inside, even on lines collinear with the ray" do
+      @co_first_vertex.is_in_polygon?(@simple_triangle).should be_true
+      @co_second_vertex.is_in_polygon?(@simple_triangle).should be_true
+    end
+    it "should have lines on edges inside, even on lines collinear with the ray" do
+      @on_other_edge.is_in_polygon?(@simple_triangle).should be_true
+    end
+    it "should have lines on edges inside, even on lines collinear with the ray" do
+      @co_on_edge.is_in_polygon?(@simple_triangle).should be_true
     end
   end
   
