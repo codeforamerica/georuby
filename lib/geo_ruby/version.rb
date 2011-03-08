@@ -1,3 +1,3 @@
-module Georuby
+module GeoRuby
   VERSION = "0.0.1"
 end
