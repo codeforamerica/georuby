@@ -383,27 +383,14 @@ module GeoRuby
       end
       def is_in_polygon?(polygon)
         return false if polygon.empty? #if polygon is null, we're not inside it
-        _START=0;_END=1
-        #calculate ray start, just use the min,min corner
-        #in future, maybe pick a better start, based on bounding box or clockwise rotatino?
-        ray_start=Point.from_x_y(polygon[0].map {|p| p.x}.min-1,polygon[0].map {|p| p.y}.min-1)
-        ray_offset=self-ray_start
-
-        polygon.inject(0) do |sum,ring|
-          sum+(ring+[ring.first]).each_cons(2).inject(0) do |s2,line| #pulls every pair of [p1,p2]
-            #see if the line from start to 'point' intersects the current line. we'll ignore intersections on the second verticie, as those will be counted as intersecting with the first verticie of the next line\
-            #treating the two lines as parametric lines, what are there intersecting parameters (ray_t,line_t)?
-            offset=line[_END]-line[_START]
-            denom = (offset.y*ray_offset.x-offset.x*ray_offset.y).to_f
-            unless (denom==0)
-              start_diff=ray_start-line[_START]
-              ray_t = (offset.x*start_diff.y - offset.y*start_diff.x)/denom
-              line_t = (ray_offset.x*start_diff.y - ray_offset.y*start_diff.x)/denom
-              next (s2+1) if (0..1).include? ray_t and (0...1).include? line_t
-            end
-            s2
+		#algorithm inspired by from http://www.visibone.com/inpoly/
+        polygon.inject(false) do |in_poly,ring|
+          (ring+[ring.first]).each_cons(2).inject(in_poly) do |in2,line| #pulls every pair of [p1,p2]
+            l=line.sort_by(&:x)
+            o1=self-l[0];o2=l[1]-l[0]
+            ((l[0].x...l[1].x).include?(self.x) && (o1.y*o2.x < o1.x*o2.y)) ? !in2 : in2
           end
-        end.odd?
+        end
       end
 
     end
