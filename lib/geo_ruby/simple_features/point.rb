@@ -382,7 +382,6 @@ module GeoRuby
         Point.from_x_y(x-other.x,y-other.y)
       end
       def is_in_polygon?(polygon)
-        return false if polygon.empty? #if polygon is null, we're not inside it
 		#algorithm inspired by from http://www.visibone.com/inpoly/
         polygon.inject(false) do |in_poly,ring|
           (ring+[ring.first]).each_cons(2).inject(in_poly) do |in2,line| #pulls every pair of [p1,p2]
