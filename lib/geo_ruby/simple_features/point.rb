@@ -387,6 +387,7 @@ module GeoRuby
           (ring+[ring.first]).each_cons(2).inject(in_poly) do |in2,line| #pulls every pair of [p1,p2]
             l=line.sort_by(&:x)
             o1=self-l[0];o2=l[1]-l[0]
+            #if a vertical ray from us crosses between the xs of a line (ignoring the right vertex), and we actually go through it, then swap our 'in' state. else leave it normal.
             ((l[0].x...l[1].x).include?(self.x) && (o1.y*o2.x < o1.x*o2.y)) ? !in2 : in2
           end
         end
